@@ -1,120 +1,177 @@
 @echo off
-
 color 3
-title ASSISTANCE WINDOWS MULTI TACHES
+title Multi-tools-batch
 
-goto start
 :start
+cls
 echo ===============================================
-echo           ASSISTANCE WINDOWS
+echo                Multi-Tools Panel
+echo ===============================================
+echo 1 - Check internet connection
+echo 2 - Clean temporary files
+echo 3 - Save a file to a USB drive
+echo 4 - Generate a random password
+echo 5 - Compress a folder
+echo 6 - Show CPU / RAM usage
+echo 7 - Quick restart / shutdown
+echo 0 - Exit tool
 echo ===============================================
 echo.
-echo 1 - Verifier la connexion internet
-echo 2 - Nettoyer les fichier temporaires
-echo 3 - Sauvegarder un fichier sur une cle USB
-echo 4 - Generer un mot de passe aleatoire
-echo 5 - Compresser un dossier
-echo 6 - Afficher l'usage CPU / RAM
-echo 7 - Redemarrage / Arret rapide du PC
-echo 0 - quitter le tools
+set "choiceinput="
+set /p choiceinput=Please choose an option : 
 echo.
-set choiceinput=
-set /p choiceinput= Merci de bien vouloir faire un choix : 
-if %choiceinput%==1 goto choice1
-if %choiceinput%==2 goto choice2
-if %choiceinput%==3 goto choice3
-if %choiceinput%==4 goto choice4
-if %choiceinput%==5 goto choice5
-if %choiceinput%==6 goto choice6
-if %choiceinput%==7 goto choice7
-if %choiceinput%==8 goto choice8
-if %choiceinput%==0 goto choice0
 
-:choice0
+if "%choiceinput%"=="1" goto choice1
+if "%choiceinput%"=="2" goto choice2
+if "%choiceinput%"=="3" goto choice3
+if "%choiceinput%"=="4" goto choice4
+if "%choiceinput%"=="5" goto choice5
+if "%choiceinput%"=="6" goto choice6
+if "%choiceinput%"=="7" goto choice7
+if "%choiceinput%"=="0" goto exitTool
+goto start
+
+:exitTool
 exit
 
+:: 1 - Check Internet connection
 :choice1
 cls
-timeout /t 5
-echo.
-echo Un Ping vas etre fait merci de cliquez sur une touche pour confirmer.
-echo.
-pause
+echo A ping test will be performed. Press any key to continue.
+pause >nul
 cls
 ping -n 1 www.google.com >nul
-IF %errorlevel%==0 goto ConnexionOK
-IF NOT %errorlevel%==0 goto ConnexionKO
-:ConnexionOK
+if %errorlevel%==0 goto internetOK
+goto internetKO
+
+:internetOK
 cls
-echo C est bon vous etez bien connecter a internet.
-:ConnexionKO
-cls
-echo Vous n etez pas connecter a internet merci de verifier vos parametre.
-timeout /t 10
+echo Internet connection: OK
+timeout /t 3 >nul
 goto start
 
+:internetKO
+cls
+echo No internet connection detected. Please check your network.
+timeout /t 5 >nul
+goto start
+
+:: 2 - Clean temporary files
 :choice2
 cls
-timeout /t 5
-echo.
-cls
-echo Suppression des fichiers temporaires en cours...
+echo Cleaning temporary files...
 del /s /f /q "%TEMP%\*.*" >nul 2>&1
 for /d %%i in ("%TEMP%\*") do rd /s /q "%%i" >nul 2>&1
 del /s /f /q "C:\Windows\Temp\*.*" >nul 2>&1
 for /d %%i in ("C:\Windows\Temp\*") do rd /s /q "%%i" >nul 2>&1
 PowerShell.exe -Command "Clear-RecycleBin -Force" >nul 2>&1
-echo Nettoyage termine !
-pause
-cls
+echo Cleaning completed!
+pause >nul
 goto start
 
+:: 3 - Backup file to USB
 :choice3
 cls
-timeout /t 5
-echo.
-cls
-setlocal
+set "USB_NAME=USBDrive"
+set /p FILE_SOURCE=Enter the full path of the file to save: 
 
-REM === CONFIGURATION ===
-set "NOM_CLE_USB=MaCleUSB"  REM Nom affiché dans l’explorateur (volume label)
-
-REM === DEMANDE DU FICHIER À L'UTILISATEUR ===
-set /p FICHIER_SOURCE=Entrez le chemin complet du fichier à sauvegarder :
-
-REM === VÉRIFICATION DU FICHIER ===
-if not exist "%FICHIER_SOURCE%" (
-    echo Le fichier "%FICHIER_SOURCE%" n'existe pas.
-    pause
-    exit /b
+if not exist "%FILE_SOURCE%" (
+    echo File not found.
+    pause >nul
+    goto start
 )
 
-REM === DÉTECTION DE LA CLÉ USB ===
-set "CLE_USB="
-
+set "USB_DRIVE="
 for /f "tokens=1,2*" %%i in ('wmic logicaldisk get name^, volumename ^| findstr /R /C:"[A-Z]:"') do (
-    if /i "%%k"=="%NOM_CLE_USB%" (
-        set "CLE_USB=%%i"
-    )
+    if /i "%%k"=="%USB_NAME%" set "USB_DRIVE=%%i"
 )
 
-if not defined CLE_USB (
-    echo  Clé USB "%NOM_CLE_USB%" non détectée.
-    pause
-    exit /b
+if not defined USB_DRIVE (
+    echo USB drive "%USB_NAME%" not detected.
+    pause >nul
+    goto start
 )
 
-REM === COPIE DU FICHIER ===
-echo  Clé USB détectée sur %CLE_USB%
-echo  Copie de "%FICHIER_SOURCE%" vers "%CLE_USB%\"
+echo USB drive detected on %USB_DRIVE%
+echo Copying file...
+copy "%FILE_SOURCE%" "%USB_DRIVE%\" /Y >nul
 
-copy "%FICHIER_SOURCE%" "%CLE_USB%\" /Y >nul
 if %errorlevel%==0 (
-    echo  Sauvegarde réussie !
+    echo File successfully saved!
 ) else (
-    echo erreur lors de la copie.
+    echo Error during file copy.
 )
 
-pause
-endlocal
+pause >nul
+goto start
+
+:: 4 - Generate random password
+:choice4
+cls
+set /p length=Enter password length (default 12): 
+if "%length%"=="" set length=12
+
+set "chars=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*"
+
+set "password="
+
+:generateLoop
+set /a rnd=%random% %% 70
+for %%A in (!chars!) do (
+    set "char=!chars:~%rnd%,1!"
+)
+set "password=%password%%char%"
+set /a count+=1
+if %count% LSS %length% goto generateLoop
+
+cls
+echo Generated password:
+echo %password%
+set count=
+pause >nul
+goto start
+
+:: 5 - Compress folder
+:choice5
+cls
+set /p folder=Enter the folder path to compress: 
+if not exist "%folder%" (
+    echo Folder not found.
+    pause >nul
+    goto start
+)
+
+set /p zipname=Enter output ZIP name (without .zip): 
+
+PowerShell.exe -Command "Compress-Archive -Path '%folder%' -DestinationPath '%cd%\%zipname%.zip'" 2>nul
+
+cls
+echo Compression completed: %zipname%.zip
+pause >nul
+goto start
+
+:: 6 - Show CPU / RAM usage
+:choice6
+cls
+echo CPU and RAM usage:
+echo =====================
+wmic cpu get loadpercentage
+echo.
+wmic OS get FreePhysicalMemory,TotalVisibleMemorySize /Format:Table
+pause >nul
+goto start
+
+:: 7 - Quick restart / shutdown
+:choice7
+cls
+echo 1 - Restart computer
+echo 2 - Shutdown computer
+echo 0 - Cancel
+set /p powerChoice=Choose an option: 
+
+if "%powerChoice%"=="1" shutdown /r /t 0
+if "%powerChoice%"=="2" shutdown /s /t 0
+goto start
+
+
 goto start
