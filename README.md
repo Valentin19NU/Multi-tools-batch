@@ -75,7 +75,7 @@ This project will be released under the **MIT License** (or any license you pref
 ## What's New in v0.3
 
 * Added stable Linux support
-* New `.sh` file included: `index_linux.sh`
+* New `.sh` file included: `indexlinux.sh`
 * Improved compatibility and execution stability on Linux systems
 * Better organization of batch and shell scripts
 
