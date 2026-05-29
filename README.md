@@ -70,3 +70,21 @@ This project will be released under the **MIT License** (or any license you pref
 ⭐ *If you like this project, consider giving it a star on GitHub!*
 
 
+# Multi Tools Batch v0.3 Release
+
+## What's New in v0.3
+
+* Added stable Linux support
+* New `.sh` file included: `index_linux.sh`
+* Improved compatibility and execution stability on Linux systems
+* Better organization of batch and shell scripts
+
+## Notes
+
+This update improves the multi-platform experience and prepares the project for future features and optimizations. And the soon publish of the file for mac OS.
+
+## Thanks
+
+Special thanks to **lelelelkorgpt** for the support and contribution to the project ❤️
+
+Stay tuned for future updates!
